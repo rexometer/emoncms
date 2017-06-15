@@ -73,7 +73,7 @@
 
 //5 #### User Interface settings
     // Theme location (folder located under Theme/, and must have the same structure as the basic one)
-    $theme = "basic";
+    $theme = "rexometer";
     $themecolor = "standard";
 
     // Favicon filenme in Theme/$theme
@@ -112,7 +112,7 @@
     $default_action = "login";
 
     // Default controller and action if none are specified and user is logged in
-    $default_controller_auth = "feed";
+    $default_controller_auth = "home";
     $default_action_auth = "list";
 
     // Public profile functionality
