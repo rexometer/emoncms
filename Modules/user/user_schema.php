@@ -15,10 +15,10 @@ $schema['users'] = array(
     'gravatar' => array('type' => 'varchar(30)', 'default'=>''),
     'name'=>array('type'=>'varchar(30)', 'default'=>''),
     'location'=>array('type'=>'varchar(30)', 'default'=>''),
-    'timezone' => array('type'=>'varchar(64)', 'default'=>'UTC'),
-    'language' => array('type' => 'varchar(5)', 'default'=>'en_EN'),
+    'timezone' => array('type'=>'varchar(64)', 'default'=>'Europe/Berlin'),
+    'language' => array('type' => 'varchar(5)', 'default'=>'de_DE'),
     'bio' => array('type' => 'text', 'default'=>''),
-    'startingpage' => array('type'=>'varchar(64)', 'default'=>'feed/list')
+    'startingpage' => array('type'=>'varchar(64)', 'default'=>'home')
 );
 
 $schema['rememberme'] = array(
