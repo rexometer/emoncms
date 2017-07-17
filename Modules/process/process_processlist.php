@@ -48,7 +48,7 @@ class Process_ProcessList
             $this->mqtt = $mqtt;
         }
     }
-    
+
     // Module required process configuration, return $list array
     public function process_list() {
         $list = array();
@@ -65,7 +65,7 @@ class Process_ProcessList
         $list = array();
 
         // Note on engine selection
-        
+
         // The engines listed against each process must be the supported engines for each process - and are only used in the input and node config GUI dropdown selectors
         // By using the create feed api and input set processlist its possible to create any feed type with any process list combination.
         // Only feeds capable of using a particular processor are displayed to the user and can be selected from the gui.
@@ -76,11 +76,11 @@ class Process_ProcessList
         // Processors that write or update a feed are not supported and hidden from the gui on the context of virtual feeds.
 
         // 0=>Name | 1=>Arg type | 2=>function | 3=>No. of datafields if creating feed | 4=>Datatype | 5=>Group | 6=>Engines | 'desc'=>Description | 'requireredis'=>true
-        
+
         // ATENTION: Next list elements have fixed numeric keys and are here just for backward compatibility.
         // NEW PROCESSES SHOULD BE ADDED AS MODULES IN /Module/modulename/modulename_processlist.php process_list() function
 
-        $list[1] = array(_("Log to feed"),ProcessArg::FEEDID,"log_to_feed",1,DataType::REALTIME,"Main",array(Engine::PHPFINA,Engine::PHPFIWA,Engine::PHPTIMESERIES,Engine::MYSQL,Engine::MYSQLMEMORY), 'nochange'=>true, 'desc'=>"<p><b>Log to feed:</b> This processor logs to a timeseries feed which can then be used to explore historic data. This is recommended for logging power, temperature, humidity, voltage and current data.</p><p><b>Feed engine:</b><ul><li><b>PHPFina</b> is the recommended feed engine it is a basic fixed interval timeseries engine.</li><li><b>PHPTimeseries</b> is for data posted at a non regular interval such as on state change.</li></ul></p><p><b>Feed interval:</b> When selecting the feed interval select an interval that is the same as, or longer than the update rate that is set in your monitoring equipment. Setting the interval rate to be shorter than the update rate of the equipment causes un-needed disk space to be used up.</p>");
+        $list[1] = array(_("Log to feed"),ProcessArg::FEEDID,"log_to_feed",1,DataType::REALTIME,"Main",array(Engine::PHPFINA,Engine::PHPFIWA,Engine::PHPTIMESERIES,Engine::MYSQL,Engine::MYSQLMEMORY,Engine::INFLUXDB), 'nochange'=>true, 'desc'=>"<p><b>Log to feed:</b> This processor logs to a timeseries feed which can then be used to explore historic data. This is recommended for logging power, temperature, humidity, voltage and current data.</p><p><b>Feed engine:</b><ul><li><b>PHPFina</b> is the recommended feed engine it is a basic fixed interval timeseries engine.</li><li><b>PHPTimeseries</b> is for data posted at a non regular interval such as on state change.</li></ul></p><p><b>Feed interval:</b> When selecting the feed interval select an interval that is the same as, or longer than the update rate that is set in your monitoring equipment. Setting the interval rate to be shorter than the update rate of the equipment causes un-needed disk space to be used up.</p>");
         $list[2] = array(_("x"),ProcessArg::VALUE,"scale",0,DataType::UNDEFINED,"Calibration", 'desc'=>"<p>Multiplies current value by given constant. This can be useful for calibrating a particular variable on the web rather than by reprogramming hardware.</p>");
         $list[3] = array(_("+"),ProcessArg::VALUE,"offset",0,DataType::UNDEFINED,"Calibration", 'desc'=>"<p>Offset current value by given value. This can again be useful for calibrating a particular variable on the web rather than by reprogramming hardware.</p>");
         $list[4] = array(_("Power to kWh"),ProcessArg::FEEDID,"power_to_kwh",1,DataType::REALTIME,"Main",array(Engine::PHPFINA,Engine::PHPTIMESERIES,Engine::MYSQL,Engine::MYSQLMEMORY), 'nochange'=>true, 'desc'=>"<p><b>Power to kWh:</b> Convert a power value in Watts to a cumulative kWh feed.<br><br><b>Visualisation tip:</b> Feeds created with this input processor can be used to generate daily kWh data using the BarGraph visualisation with the delta property set to 1.<br>See forum thread here for an example <a href='https://openenergymonitor.org/emon/node/12308'>Creating kWh per day bar graphs from Accumulating kWh </a></p>");
@@ -144,7 +144,7 @@ class Process_ProcessList
 
         // A bit or warning: if user goto's in loop, the php will lock until the server defined timesout with an error
         $list[52] = array(_("GOTO"),ProcessArg::VALUE,"goto_process",0,DataType::UNDEFINED,"Misc", 'nochange'=>true, 'desc'=>"<p>Jumps the process execution to the specified position.</p><p><b>Warning</b><br>If you're not careful you can create a goto loop on the process list.<br>When a loop occurs, the API will appear to lock until the server php times out with an error.</p>");
-        
+
         // $list[29] = array(_("save to input"),ProcessArg::INPUTID,"save_to_input",1,DataType::UNDEFINED);
 
         //Virtual Feed specific processors (WARNING: all virtual feed specific processors must be on the "Virtual" group because there is logic in the UI to hide it on input context)
@@ -239,7 +239,7 @@ class Process_ProcessList
             return null; // should this be null for a divide by zero?
         }
     }
-    
+
     public function update_feed_data($id, $time, $value)
     {
         $time = $this->getstartday($time);
@@ -257,7 +257,7 @@ class Process_ProcessList
             $this->mysqli->query("UPDATE $feedname SET data = '$value' WHERE `time` = '$time'");
         }
         return $value;
-    } 
+    }
 
     public function add_input($id, $time, $value)
     {
@@ -286,7 +286,7 @@ class Process_ProcessList
         // only update if last datapoint was less than 2 hour old
         // this is to reduce the effect of monitor down time on creating
         // often large kwh readings.
-        $time_elapsed = ($time_now - $last_time);   
+        $time_elapsed = ($time_now - $last_time);
         if ($time_elapsed>0 && $time_elapsed<7200) { // 2hrs
             // kWh calculation
             $kwh_inc = ($time_elapsed * $value) / 3600000.0;
@@ -301,7 +301,7 @@ class Process_ProcessList
 
         $padding_mode = "join";
         $this->feed->insert_data($feedid, $time_now, $time_now, $new_kwh, $padding_mode);
-        
+
         return $value;
     }
 
@@ -318,9 +318,9 @@ class Process_ProcessList
         $last_time = $last['time']*1;
 
         $current_slot = $this->getstartday($time_now);
-        $last_slot = $this->getstartday($last_time);    
+        $last_slot = $this->getstartday($last_time);
 
-        $time_elapsed = ($time_now - $last_time);   
+        $time_elapsed = ($time_now - $last_time);
         if ($time_elapsed>0 && $time_elapsed<7200) { // 2hrs
             // kWh calculation
             $kwh_inc = ($time_elapsed * $value) / 3600000.0;
@@ -347,10 +347,10 @@ class Process_ProcessList
     {
         global $redis;
         if (!$redis) return $value; // return if redis is not available
-        
+
         $currentkwhd = $this->feed->get_timevalue($feedid);
         $last_time = $currentkwhd['time'];
-        
+
         //$current_slot = floor($time_now / 86400) * 86400;
         //$last_slot = floor($last_time / 86400) * 86400;
         $current_slot = $this->getstartday($time_now);
@@ -363,7 +363,7 @@ class Process_ProcessList
             // kwh values should always be increasing so ignore ones that are less
             // assume they are errors
             if ($kwhinc<0) { $kwhinc = 0; $value = $lastkwhvalue['value']; }
-            
+
             if($last_slot == $current_slot) {
                 $new_kwh = $currentkwhd['value'] + $kwhinc;
             } else {
@@ -372,7 +372,7 @@ class Process_ProcessList
 
             $this->feed->update_data($feedid, $time_now, $current_slot, $new_kwh);
         }
-        
+
         $redis->hMset("process:kwhtokwhd:$feedid", array('time' => $time_now, 'value' => $value));
 
         return $value;
@@ -386,22 +386,22 @@ class Process_ProcessList
         // Get last value
         $last = $this->feed->get_timevalue($feedid);
         $last_time = $last['time'];
-        
+
         //$current_slot = floor($time_now / 86400) * 86400;
         //$last_slot = floor($last_time / 86400) * 86400;
         $current_slot = $this->getstartday($time_now);
         $last_slot = $this->getstartday($last_time);
-        
+
         if (!isset($last['value'])) $last['value'] = 0;
         $ontime = $last['value'];
         $time_elapsed = 0;
-        
+
         if ($value > 0 && (($time_now-$last_time)<7200))
         {
             $time_elapsed = $time_now - $last_time;
             $ontime += $time_elapsed;
         }
-        
+
         if($last_slot != $current_slot) $ontime = $time_elapsed;
 
         $this->feed->update_data($feedid, $time_now, $current_slot, $ontime);
@@ -416,7 +416,7 @@ class Process_ProcessList
     {
         global $redis;
         if (!$redis) return $value; // return if redis is not available
-        
+
         if ($redis->exists("process:ratechange:$feedid")) {
             $lastvalue = $redis->hmget("process:ratechange:$feedid",array('time','value'));
             $ratechange = $value - $lastvalue['value'];
@@ -437,15 +437,15 @@ class Process_ProcessList
     {
         $last = $this->feed->get_timevalue($feedid);
         $last_time = $last['time'];
-        
+
         //$current_slot = floor($time_now / 86400) * 86400;
         //$last_slot = floor($last_time / 86400) * 86400;
         $current_slot = $this->getstartday($time_now);
         $last_slot = $this->getstartday($last_time);
-               
+
         $new_kwh = $last['value'] + ($value / 1000.0);
         if ($last_slot != $current_slot) $new_kwh = ($value / 1000.0);
-        
+
         $this->feed->update_data($feedid, $time_now, $current_slot, $new_kwh);
 
         return $value;
@@ -499,7 +499,7 @@ class Process_ProcessList
         $last_time = $lastvalue['time'];
 
         // kWh calculation
-        $time_elapsed = ($time_now - $last_time);   
+        $time_elapsed = ($time_now - $last_time);
         if ($time_elapsed>0 && $time_elapsed<7200) { // 2hrs
             $kwh_inc = ($time_elapsed * $value) / 3600000;
         } else {
@@ -561,7 +561,7 @@ class Process_ProcessList
     {
         global $redis;
         if (!$redis) return $value; // return if redis is not available
-        
+
         $power = 0;
         if ($redis->exists("process:kwhtopower:$feedid")) {
             $lastvalue = $redis->hmget("process:kwhtopower:$feedid",array('time','value'));
@@ -612,7 +612,7 @@ class Process_ProcessList
         return $value;
 
     }
-    
+
     public function add_feed($feedid, $time, $value)
     {
         $last = $this->feed->get_timevalue($feedid);
@@ -626,7 +626,7 @@ class Process_ProcessList
         $myvar = $last['value'] *1;
         return $value - $myvar;
     }
-    
+
     public function multiply_by_feed($feedid, $time, $value)
     {
         $last = $this->feed->get_timevalue($feedid);
@@ -638,44 +638,44 @@ class Process_ProcessList
     {
         $last  = $this->feed->get_timevalue($feedid);
         $myvar = $last['value'] *1;
-        
+
         if ($myvar!=0) {
             return $value / $myvar;
         } else {
             return null;
         }
     }
-    
+
     public function wh_accumulator($feedid, $time, $value)
     {
         $max_power = 25000;
         $totalwh = $value;
-        
+
         global $redis;
         if (!$redis) return $value; // return if redis is not available
 
         if ($redis->exists("process:whaccumulator:$feedid")) {
             $last_input = $redis->hmget("process:whaccumulator:$feedid",array('time','value'));
-    
+
             $last_feed  = $this->feed->get_timevalue($feedid);
             $totalwh = $last_feed['value'];
-            
+
             $time_diff = $time - $last_feed['time'];
             $val_diff = $value - $last_input['value'];
-            
+
             $power = ($val_diff * 3600) / $time_diff;
-            
+
             if ($val_diff>0 && $power<$max_power) $totalwh += $val_diff;
-            
+
             $padding_mode = "join";
             $this->feed->insert_data($feedid, $time, $time, $totalwh, $padding_mode);
-            
+
         }
         $redis->hMset("process:whaccumulator:$feedid", array('time' => $time, 'value' => $value));
 
         return $totalwh;
     }
-    
+
     public function publish_to_mqtt($topic, $time, $value)
     {
         global $mqtt_server;
@@ -684,10 +684,10 @@ class Process_ProcessList
             $this->mqtt->publish($topic,$value,0);
             $this->mqtt->close();
         }
-        
+
         return $value;
     }
-    
+
 
     // Conditional process list flow
     public function if_zero_skip($noarg, $time, $value) {
@@ -731,7 +731,7 @@ class Process_ProcessList
             $this->proc_skip_next = true;
         return $value;
     }
-    
+
     public function if_equal_skip($arg, $time, $value) {
         if ($value == $arg)
             $this->proc_skip_next = true;
@@ -742,7 +742,7 @@ class Process_ProcessList
             $this->proc_skip_next = true;
         return $value;
     }
-    
+
     public function goto_process($proc_no, $time, $value){
         $this->proc_goto = $proc_no - 2;
         return $value;
@@ -754,7 +754,7 @@ class Process_ProcessList
     }
 
 
-    // Used as Virtual feed source of data (read from other feeds). Gets feed data for the specified time range in $options variable, 
+    // Used as Virtual feed source of data (read from other feeds). Gets feed data for the specified time range in $options variable,
     // Set data_sampling to false in settings.php to allow precise average feed data calculation. It will be 10x slower!
     public function source_feed_data_time($feedid, $time, $value, $options)
     {
@@ -773,19 +773,19 @@ class Process_ProcessList
                 // To speed up reading, but will miss some average data
                 $meta=$this->feed->get_meta($feedid);
                 if (isset($meta->interval) && (int)$meta->interval > 1) {
-                    $interval = (int)$meta->interval; // set engine interval 
-                    $end = $start; 
+                    $interval = (int)$meta->interval; // set engine interval
+                    $end = $start;
                     $start = $end - ($interval * 2); // search past x interval secs
                 } else if ($interval > 5000) { //83m interval is high a table scan will happen in engine
-                    $end = $start; 
-                    $start = $end - 60; // force search past 1m 
+                    $end = $start;
+                    $start = $end - 60; // force search past 1m
                     $interval = 1;
                 } else if ($interval > 300) { // 5m
-                    $end = $start; 
+                    $end = $start;
                     $start = $end - 20; //  search past 20s
                     $interval = 1;
                 } else if ($interval < 5) { // 5s
-                    $end = $start; 
+                    $end = $start;
                     $start = $end - 10; //  search past 10s
                     $interval = 1;
                 }
@@ -794,10 +794,10 @@ class Process_ProcessList
             $end*=1000;
             $data = $this->feed->get_data($feedid,$start,$end,$interval,1,1); // get data from feed engine with skipmissing and limit interval options
         } else {
-            
-            $data = $this->feed->get_timevalue($feedid); // get last data from feed engine 
+
+            $data = $this->feed->get_timevalue($feedid); // get last data from feed engine
             $data = array(array($data['time'], $data['value'])); // convert last data
-            $end = $time; 
+            $end = $time;
             $start = $end;
             $interval = ($end - $start);
         }
@@ -817,7 +817,7 @@ class Process_ProcessList
                 }
                 $value = ($sum / $cnt); // return average value
             }
-            // logging 
+            // logging
             $endtime = microtime(true);
             $timediff = $endtime - $starttime;
             $this->log->info("source_feed_data_time() ". ($data_sampling ? "SAMPLING ":"") ."feedid=$feedid start=".($start/1000)." end=".($end/1000)." len=".(($end - $start)/1000)." int=$interval cnt=$cnt value=$value took=$timediff ");
@@ -833,21 +833,21 @@ class Process_ProcessList
         $value = $last + $value;
         return $value;
     }
-    
+
     public function sub_source_feed($feedid, $time, $value, $options)
     {
         $last = $this->source_feed_data_time($feedid, $time, $value, $options);
         $myvar = $last*1;
         return $value - $myvar;
     }
-    
+
     public function multiply_by_source_feed($feedid, $time, $value, $options)
     {
         $last = $this->source_feed_data_time($feedid, $time, $value, $options);
         $value = $last * $value;
         return $value;
     }
-    
+
     public function divide_by_source_feed($feedid, $time, $value, $options)
     {
         $last = $this->source_feed_data_time($feedid, $time, $value, $options);
@@ -859,7 +859,7 @@ class Process_ProcessList
             return null;
         }
     }
-    
+
     public function reciprocal_by_source_feed($feedid, $time, $value, $options)
     {
         $last = $this->source_feed_data_time($feedid, $time, $value, $options);
@@ -895,10 +895,10 @@ class Process_ProcessList
         }
     }
 
-    
-    
+
+
     // No longer used
-    public function average($feedid, $time_now, $value) { return $value; } // needs re-implementing    
+    public function average($feedid, $time_now, $value) { return $value; } // needs re-implementing
     public function phaseshift($id, $time, $value) { return $value; }
     public function kwh_to_kwhd_old($feedid, $time_now, $value) { return $value; }
     public function power_acc_to_kwhd($feedid,$time_now,$value) { return $value; } // Process can now be achieved with allow positive process before power to kwhd
@@ -908,7 +908,7 @@ class Process_ProcessList
     // See http://harizanov.com/2012/05/measuring-the-solar-yield/ for more info on how to use it
     //------------------------------------------------------------------------------------------------------
     public function heat_flux($feedid,$time_now,$value) { return $value; } // Removed to be reintroduced as a post-processing based visualisation calculated on the fly.
-    
+
     // Get the start of the day
     public function getstartday($time_now)
     {
