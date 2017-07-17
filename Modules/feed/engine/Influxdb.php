@@ -1,6 +1,6 @@
 <?php
 
-require '../vendor/autoload.php';
+require "vendor/autoload.php";
 
 //error reporting active ONLY for DEBUGGING
 error_reporting(E_ALL);
@@ -81,7 +81,7 @@ class Influxdb
     */
     public function post($feedid,$time,$value,$arg=null)
     {
-      require '../vendor/autoload.php';
+      require "vendor/autoload.php";
 
       // establish database connection
       $client = new \InfluxDB\Client('localhost');
