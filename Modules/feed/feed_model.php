@@ -59,6 +59,9 @@ class Feed
             } else if ($e == (string)Engine::PHPTIMESERIES) {
                     require "Modules/feed/engine/PHPTimeSeries.php";    // Variable interval no averaging
                     $engines[$e] =  new PHPTimeSeries($this->settings['phptimeseries']);
+            } else if ($e == (string)Engine::INFLUXDB) {
+                    require "Modules/feed/engine/Influxdb.php";    //  Influx
+                    $engines[$e] =  new Influxdb($this->settings['phptimeseries']);
             } else if ($e == (string)Engine::MYSQLMEMORY) {
                     require_once "Modules/feed/engine/MysqlTimeSeries.php";  // Mysql engine
                     require "Modules/feed/engine/MysqlMemory.php";           // Mysql Memory engine
@@ -90,7 +93,7 @@ class Feed
 
         // If feed of given name by the user already exists
         if ($this->exists_tag_name($userid,$tag,$name)) return array('success'=>false, 'message'=>'feed already exists');
-        
+
         // Histogram engine requires MYSQL
         if ($datatype==DataType::HISTOGRAM && $engine!=Engine::MYSQL) $engine = Engine::MYSQL;
 
@@ -198,7 +201,7 @@ class Feed
         }
         return $feedexist;
     }
-    
+
     public function get_id($userid,$name)
     {
         $userid = intval($userid);
@@ -206,7 +209,7 @@ class Feed
         $result = $this->mysqli->query("SELECT id FROM feeds WHERE userid = '$userid' AND name = '$name'");
         if ($result->num_rows>0) { $row = $result->fetch_array(); return $row['id']; } else return false;
     }
-    
+
     public function exists_tag_name($userid,$tag,$name)
     {
         $userid = intval($userid);
@@ -337,7 +340,7 @@ class Feed
         }
         return $feeds;
     }
-    
+
     public function get_user_feed_ids($userid)
     {
         $userid = (int) $userid;
@@ -389,7 +392,7 @@ class Feed
         if ($field!=NULL) // if the feed exists
         {
             $field = preg_replace('/[^\w\s-]/','',$field);
-         
+
             if ($field=='time' || $field=='value') {
                 $lastvalue = $this->get_timevalue($id);
                 $val = $lastvalue[$field];
@@ -408,7 +411,7 @@ class Feed
 
     public function get_timevalue($id)
     {
-       
+
         $id = (int) $id;
         //$this->log->info("get_timevalue() $id");
         if (!$this->exist($id)) {
@@ -422,7 +425,7 @@ class Feed
             $lastvirtual = $this->EngineClass(Engine::VIRTUALFEED)->lastvalue($id);
             return array('time'=>$lastvirtual['time'], 'value'=>$lastvirtual['value']);
         }
-        
+
         if ($this->redis)
         {
             if ($this->redis->hExists("feed:$id",'time')) {
@@ -499,64 +502,64 @@ class Feed
 
         return $data;
     }
-    
+
     public function get_data_DMY($feedid,$start,$end,$mode)
     {
         $feedid = (int) $feedid;
         if ($end<=$start) return array('success'=>false, 'message'=>"Request end time before start time");
         if (!$this->exist($feedid)) return array('success'=>false, 'message'=>'Feed does not exist');
         $engine = $this->get_engine($feedid);
-        
+
         if ($engine != Engine::PHPFINA && $engine != Engine::PHPTIMESERIES) return array('success'=>false, 'message'=>"This request is only supported by PHPFina AND PHPTimeseries");
-        
+
         // Call to engine get_data
         $userid = $this->get_field($feedid,"userid");
         $timezone = $this->get_user_timezone($userid);
-            
+
         $data = $this->EngineClass($engine)->get_data_DMY($feedid,$start,$end,$mode,$timezone);
         return $data;
     }
-    
+
     public function get_data_DMY_time_of_day($feedid,$start,$end,$mode,$split)
     {
         $feedid = (int) $feedid;
         if ($end<=$start) return array('success'=>false, 'message'=>"Request end time before start time");
         if (!$this->exist($feedid)) return array('success'=>false, 'message'=>'Feed does not exist');
         $engine = $this->get_engine($feedid);
-        
+
         if ($engine != Engine::PHPFINA) return array('success'=>false, 'message'=>"This request is only supported by PHPFina AND PHPTimeseries");
-        
+
         // Call to engine get_data
         $userid = $this->get_field($feedid,"userid");
         $timezone = $this->get_user_timezone($userid);
-            
+
         $data = $this->EngineClass($engine)->get_data_DMY_time_of_day($feedid,$start,$end,$mode,$timezone,$split);
         return $data;
     }
-    
+
     public function get_average($feedid,$start,$end,$outinterval)
     {
         $feedid = (int) $feedid;
         if (!$this->exist($feedid)) return array('success'=>false, 'message'=>'Feed does not exist');
-        
+
         $engine = $this->get_engine($feedid);
         if ($engine!=Engine::PHPFINA) return false;
-        
+
         return $this->EngineClass($engine)->get_average($feedid,$start,$end,$outinterval);
     }
-    
+
     public function get_average_DMY($feedid,$start,$end,$mode)
     {
         $feedid = (int) $feedid;
         if (!$this->exist($feedid)) return array('success'=>false, 'message'=>'Feed does not exist');
-        
+
         $engine = $this->get_engine($feedid);
         if ($engine!=Engine::PHPFINA) return false;
 
         // Call to engine get_data
         $userid = $this->get_field($feedid,"userid");
         $timezone = $this->get_user_timezone($userid);
-        
+
         return $this->EngineClass($engine)->get_average_DMY($feedid,$start,$end,$mode,$timezone);
     }
 
@@ -617,7 +620,7 @@ class Feed
         ksort($exportdata); // Sort timestamps
         return $exportdata;
     }
-    
+
     // Generate export multi file
     public function csv_export_multi($feedids,$start,$end,$outinterval,$datetimeformat,$name)
     {
@@ -776,7 +779,7 @@ class Feed
 
         return $value;
     }
-    
+
     public function upload_fixed_interval($feedid,$start,$interval,$npoints)
     {
         $feedid = (int) $feedid;
@@ -797,8 +800,8 @@ class Feed
     {
         $feedid = (int) $feedid;
         $npoints = (int) $npoints;
-        
-        if (!$this->exist($feedid)) return array('success'=>false, 'message'=>'Feed does not exist');        
+
+        if (!$this->exist($feedid)) return array('success'=>false, 'message'=>'Feed does not exist');
         $engine = $this->get_engine($feedid);
         if ($engine==Engine::PHPFINA) {
             return $this->EngineClass($engine)->upload_variable_interval($feedid,$npoints);
@@ -951,8 +954,8 @@ class Feed
         }
         return $engine;
     }
-    
-    public function get_user_timezone($userid) 
+
+    public function get_user_timezone($userid)
     {
         $result = $this->mysqli->query("SELECT timezone FROM users WHERE id = '$userid';");
         $row = $result->fetch_object();
@@ -967,4 +970,3 @@ class Feed
         return $timezone;
     }
 }
-
