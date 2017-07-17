@@ -5,11 +5,11 @@
 <style>
   .modal-processlist {
     width: 94%; left: 3%; /* (100%-width)/2 */
-    margin-left:auto; margin-right:auto; 
+    margin-left:auto; margin-right:auto;
     overflow-y: hidden;
   }
   .modal-processlist .modal-body {
-     max-height: none; 
+     max-height: none;
      overflow-y: auto;
    }
 
@@ -24,7 +24,7 @@
   <?php if ($redis_enabled) echo "processlist_ui.has_redis = 1;"; ?>
 
   $(window).resize(function(){
-    processlist_ui.adjustmodal() 
+    processlist_ui.adjustmodal()
   });
 </script>
 
@@ -35,9 +35,9 @@
     </div>
     <div class="modal-body" id="processlist-ui">
         <p><?php echo _('Processes are executed sequentially with the result value being passed down for further processing to the next processor on this processing list.'); ?></p>
-        
+
             <div id="noprocess" class="alert"><?php echo _('You have no processes defined'); ?></div>
-            
+
             <table id="process-table" class="table table-hover">
                 <tr>
                     <th style='width:5%;'></th>
@@ -65,7 +65,7 @@
                                 <input type="text" id="value-input" class="input-medium" placeholder="Type value..." />
                             </div>
                         </span>
-                        
+
                         <span id="type-text" style="display:none">
                             <div class="input-prepend">
                                 <span class="add-on text-select-label">Text</span>
@@ -75,7 +75,7 @@
 
                         <span id="type-input" style="display:none">
                             <div class="input-prepend">
-                                <span class="add-on input-select-label">Input</span>                   
+                                <span class="add-on input-select-label">Input</span>
                                 <div class="btn-group">
                                     <select id="input-select" class="input-medium"></select>
                                 </div>
@@ -90,8 +90,8 @@
                                 </div>
                             </div>
                         </span>
-                        
-                        <span id="type-feed"> 
+
+                        <span id="type-feed">
                             <div class="input-prepend">
                                 <span class="add-on feed-select-label">Data</span>
                                 <div class="btn-group">
@@ -112,7 +112,7 @@
                                     <input type="hidden" id="new-feed-tag"/>
                                 </div>
                             </div>
-                            
+
                             <div class="input-prepend">
                                 <span class="add-on feed-engine-label"><?php echo _('Engine'); ?></span>
                                 <div class="btn-group">
@@ -123,6 +123,7 @@
                                         <option value=2>PHPTIMESERIES Variable Interval No Averaging</option>
                                         <option value=0>MYSQL TimeSeries</option>
                                         <option value=8>MYSQL Memory (RAM data lost on power off)</option>
+                                        <option value=10>INFLUXDB</option>
                                     </select>
 
                                     <select id="feed-interval" class="input-mini">
