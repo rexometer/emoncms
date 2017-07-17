@@ -1,3 +1,42 @@
+# How to use InfluxDB
+This is an approach howto integrate InfluxDB as a database engine into emoncms.
+
+1. Install InfluxDB on your server: If your operating system is using systemd (Ubuntu 15.04+, Debian 8+) `sudo apt-get update && sudo apt-get install influxdb
+sudo systemctl start influxdb`
+More install options (for example other OS): https://docs.influxdata.com/influxdb/v1.2/introduction/installation/
+
+2. Create a database: 
+ - Executing `influx` will start the CLI and automatically connect to the local InfluxDB instance
+ - `CREATE DATABASE emoncms`
+ - `exit`
+ 
+3. Install emoncms influx branch: https://github.com/rexometer/emoncms/tree/influx
+
+4. Install influxdb-php via [composer](https://getcomposer.org)
+ To connect to InfluxDB we are using influxdb-php at the moment:https://github.com/influxdata/influxdb-php
+ Maybe it's better to use the HTTP-API? (https://docs.influxdata.com/influxdb/v1.2/guides/writing_data/)
+ 
+5. Now you should be able to select INFLUXDB as logging feed
+
+## Improvement
+
+- Move the database connection to index.php (like MySQL). Now the database connection is established with every InfluxDB engine call.
+- Maybe it's better to use the HTTP-API instead of influxdb-php? (https://docs.influxdata.com/influxdb/v1.2/guides/writing_data/)
+- For now only the `post` function in https://github.com/rexometer/emoncms/blob/influx/Modules/feed/engine/Influxdb.php is working. Make `update`, `lastvalue`, `get_data`, `export`, `csv_export` ... working.
+
+# How to integrate an own feed engine
+This is an side output of the integration of influxDB. It was quite hard to find the needed information, so I will start to describe my procedure.
+
+1. Start with the engine template and create your own engine: https://github.com/rexometer/emoncms/blob/master/Modules/feed/engine/TemplateEngine.php. In this example we are creating a engine called InfluxDB: 
+2. Insert your newly build engine into the feed-model: https://github.com/rexometer/emoncms/commit/c3c12930e5379b988c9637539810e2919bef092e
+3. Add your engine to Lib/enum.php with an unused number: https://github.com/rexometer/emoncms/commit/abfdb7a1f581150777f1c71ea95af78498f25afd
+4. Add your new engine with the number giving in enum.php to Modules/process/Views/process_ui.php, so it's available in the UI.
+5. Add enginename to Modules/feed/Views/feedlist_view.php. Inportant: keep the ordering consistent with enum.php
+6. Add the engine name to every process wich is allowed to use the new engine: Modules/process/process_processlist.php
+
+
+
+
 # Emoncms 9
 
 [![Build Status](https://travis-ci.org/emoncms/emoncms.svg?branch=master)](https://travis-ci.org/emoncms/emoncms)
