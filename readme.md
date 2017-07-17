@@ -11,6 +11,7 @@ More install options (for example other OS): https://docs.influxdata.com/influxd
  - `exit`
  
 3. Install emoncms influx branch: https://github.com/rexometer/emoncms/tree/influx
+ `git clone -b influx https://github.com/rexometer/emoncms.git`
 
 4. Install influxdb-php via [composer](https://getcomposer.org)
  To connect to InfluxDB we are using influxdb-php at the moment:https://github.com/influxdata/influxdb-php
