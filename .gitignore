@@ -20,7 +20,8 @@ Modules/*/
 !Modules/user/
 !Modules/vis/
 
-# Ignore all themes except basic
+# Ignore all themes except basic and rexometer
 Theme/*
 Theme/*/
 !Theme/basic/
+!Theme/rexometer/
