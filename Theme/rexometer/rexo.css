@@ -19,10 +19,6 @@ http://openenergymonitor.org
     margin: 0 auto -40px;
 }
 
-.body-login {
-	background-color: #bcbcbc;
-}
-
 #login-form input[type="text"], #login-form input[type="password"] {
     width: 94%;
 }
@@ -32,7 +28,7 @@ http://openenergymonitor.org
 }
 #footer {
     background-color: #f5f5f5;
-	color: #a4aba5;
+        color: #a4aba5;
     text-align: center;
     font-size: 13px;
     font-weight: bold;
@@ -112,46 +108,46 @@ input[type=text][class=variable-name-edit] {
 /* eigener Button */
 .btn-primary.active,.btn-warning.active,.btn-danger.active,.btn-success.active,.btn-info.active,.btn-inverse.active{color:rgba(255,255,255,0.75)}
 .btn-info,.btn-primary{
-	color:#fff;
-	text-shadow:0 -1px 0 rgba(0,0,0,0.25);
-	background-color:#268f37;
-	*background-color:#268f37;
-	background-image:-moz-linear-gradient(top,#2da941,#04c);
-	background-image:-webkit-gradient(linear,0 0,0 100%,from(#2da941),to(#268f37));
-	background-image:-webkit-linear-gradient(top,#2da941,#268f37);
-	background-image:-o-linear-gradient(top,#2da941,#268f37);
-	background-image:linear-gradient(to bottom,#2da941,#268f37);
-	background-repeat:repeat-x;border-color:#2da941 #2da941c #002a80;
-	border-color:rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#2da941',endColorstr='#ff0044cc',GradientType=0);
-	filter:progid:DXImageTransform.Microsoft.gradient(enabled=false)}
+        color:#fff;
+        text-shadow:0 -1px 0 rgba(0,0,0,0.25);
+        background-color:#268f37;
+        *background-color:#268f37;
+        background-image:-moz-linear-gradient(top,#2da941,#04c);
+        background-image:-webkit-gradient(linear,0 0,0 100%,from(#2da941),to(#268f37));
+        background-image:-webkit-linear-gradient(top,#2da941,#268f37);
+        background-image:-o-linear-gradient(top,#2da941,#268f37);
+        background-image:linear-gradient(to bottom,#2da941,#268f37);
+        background-repeat:repeat-x;border-color:#2da941 #2da941c #002a80;
+        border-color:rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#2da941',endColorstr='#ff0044cc',GradientType=0);
+        filter:progid:DXImageTransform.Microsoft.gradient(enabled=false)}
 .btn-info:hover,.btn-primary:hover,.btn-primary:focus,.btn-primary:active,.btn-primary.active,.btn-primary.disabled,.btn-primary[disabled]{color:#fff;background-color:#268f37;*background-color:#268f37}.btn-primary:active,.btn-primary.active{background-color:#268f37}
 
-a{color:#2da941;text-decoration:none}a:hover,a:focus{color:#3ac451;text-decoration:underline}
+a{color:#57a9cd;text-decoration:none}a:hover,a:focus{color:#74c3e8;text-decoration:underline}
 
 /* Button in oberem Balken */
 .navbar-inverse .nav .active>a, .navbar-inverse .nav .active>a:hover, .navbar-inverse .nav .active>a:focus {
     color: #fff;
-    background-color: #33B139;
+    background-color: #57a9cd;
 }
 
 /*Balkon oben */
 .navbar-inverse .navbar-inner {
-    background-color: #268f37;
+    background-color: #7f9ed2;
     background-image: -moz-linear-gradient(top,#185822,#268F37);
     background-image: -webkit-gradient(linear,0 0,0 100%,from(#185822),to(#268F37));
     background-image: -webkit-linear-gradient(top,#185822,#268F37);
     background-image: -o-linear-gradient(top,#185822,#268F37);
-    background-image: linear-gradient(to bottom,#185822,#268F37);
+    background-image: linear-gradient(to bottom,#cccacb,#e9e7e8);
     background-repeat: repeat-x;
-    border-color: #268f37;
+    border-color: #74c3e8;
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#185822',endColorstr='#268F37',GradientType=0);
 }
 
 /*Button eingeloggt */
 .navbar-inverse .nav li.dropdown.open>.dropdown-toggle, .navbar-inverse .nav li.dropdown.active>.dropdown-toggle, .navbar-inverse .nav li.dropdown.open.active>.dropdown-toggle {
     color: #fff;
-    background-color: #33B139;
+    background-color: #57a9cd;
 }
 .label-info[href], .badge-info[href] {
     background-color: #268f37;
