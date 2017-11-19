@@ -202,6 +202,15 @@ class Feed
         return $feedexist;
     }
     
+    // Check both if feed exists and if the user has access to the feed
+    public function access($userid,$feedid)
+    {
+        $userid = (int) $userid;
+        $feedid = (int) $feedid;
+        $result = $this->mysqli->query("SELECT id FROM feeds WHERE userid = '$userid' AND id = '$feedid'");
+        if ($result->num_rows>0) { $row = $result->fetch_array(); return true; } else return false;
+    }
+    
     public function get_id($userid,$name)
     {
         $userid = intval($userid);
@@ -429,13 +438,17 @@ class Feed
         {
             if ($this->redis->hExists("feed:$id",'time')) {
                 $lastvalue = $this->redis->hmget("feed:$id",array('time','value'));
-                
-                if (!is_numeric($lastvalue["time"])) $lastvalue["time"] = null;
-                if (is_nan($lastvalue["time"])) $lastvalue["time"] = null;
-                
-                if (!is_numeric($lastvalue["value"])) $lastvalue["value"] = null;
-                if (is_nan($lastvalue["value"])) $lastvalue["value"] = null;
-            
+                if (!isset($lastvalue['time']) || !is_numeric($lastvalue['time']) || is_nan($lastvalue['time'])) {
+                    $lastvalue['time'] = null;
+                } else {
+                    $lastvalue['time'] = (int) $lastvalue['time'];
+                }
+                if (!isset($lastvalue['value']) || !is_numeric($lastvalue['value']) || is_nan($lastvalue['value'])) {
+                    $lastvalue['value'] = null;
+                } else {
+                    $lastvalue['value'] = (float) $lastvalue['value'];
+                }
+                // CHAVEIRO comment: Can return NULL as a valid number or else processlist logic will be broken
             } else {
                 // if it does not, load it in to redis from the actual feed data because we have no updated data from sql feeds table with redis enabled.
                 $lastvalue = $this->EngineClass($engine)->lastvalue($id);
@@ -724,11 +737,13 @@ class Feed
 
     public function set_timevalue($id, $value, $time)
     {
-        if ($value === null) $value = 'NULL'; // Null is a valid value
         if ($this->redis) {
             $this->redis->hMset("feed:$id", array('value' => $value, 'time' => $time));
         } else {
-            $this->mysqli->query("UPDATE feeds SET `time` = '$time', `value` = $value WHERE `id`= '$id'");
+            if ($stmt = $this->mysqli->prepare("UPDATE feeds SET time = ?, value = ? WHERE id = ?")) {
+                $stmt->bind_param("idi", $time, $value, $id);
+                $stmt->execute();
+            }
         }
     }
 
@@ -876,8 +891,36 @@ class Feed
     }
 
     // USES: redis feed
-    public function set_processlist($id, $processlist)
+    public function set_processlist($userid, $id, $processlist, $process_list)
     {
+        $userid = (int) $userid;
+        
+        // Validate processlist
+        $pairs = explode(",",$processlist);
+        
+        foreach ($pairs as $pair)
+        {
+            $inputprocess = explode(":", $pair);
+            if (count($inputprocess)==2) {
+                $processid = (int) $inputprocess[0];
+                $arg = (int) $inputprocess[1];
+
+                // Check that feed exists and user has ownership
+                if (isset($process_list[$processid]) && $process_list[$processid][1]==ProcessArg::FEEDID) {
+                    if (!$this->access($userid,$arg)) {
+                        return array('success'=>false, 'message'=>_("Invalid feed"));
+                    }
+                }
+
+                // Check that input exists and user has ownership
+                if (isset($process_list[$processid]) && $process_list[$processid][1]==ProcessArg::INPUTID) {
+                    $inputid = (int) $arg;
+                    $result = $this->mysqli->query("SELECT id FROM input WHERE `userid` = '$userid' AND `id` = '$arg'");
+                    if ($result->num_rows != 1) return array('success'=>false, 'message'=>_("Invalid input"));
+                }
+            }
+        }
+    
         $this->mysqli->query("UPDATE feeds SET processList = '$processlist' WHERE id='$id'");
         if ($this->mysqli->affected_rows>0){
             // CHECK REDIS

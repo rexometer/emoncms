@@ -18,13 +18,15 @@
     require "process_settings.php";
     require "core.php";
     require "route.php";
+    require "param.php";
     require "locale.php";
 
-    $emoncms_version = ($feed_settings['redisbuffer']['enabled'] ? "low-write " : "") . "9.8.8 | 2017.07.18";
+    $emoncms_version = ($feed_settings['redisbuffer']['enabled'] ? "low-write " : "") . "9.8.15 | 2017.11.18";
 
     $path = get_application_path();
     require "Lib/EmonLogger.php";
-
+    $log = new EmonLogger(__FILE__);
+    if (isset($_GET['q'])) $log->info($_GET['q']);
 
     // 2) Database
     if ($redis_enabled) {
@@ -91,13 +93,13 @@
         $apikey = str_replace('Bearer ', '', $_SERVER["HTTP_AUTHORIZATION"]);
     }
 
+    $device = false;
     if ($apikey) {
         $session = $user->apikey_session($apikey);
         if (empty($session)) {
               header($_SERVER["SERVER_PROTOCOL"]." 401 Unauthorized");
               header('WWW-Authenticate: Bearer realm="API KEY", error="invalid_apikey", error_description="Invalid API key"');
               print "Invalid API key";
-              $log = new EmonLogger(__FILE__);
               $log->error("Invalid API key '" . $apikey. "'");
               exit();
         }
@@ -108,21 +110,24 @@
               header($_SERVER["SERVER_PROTOCOL"]." 401 Unauthorized");
               header('WWW-Authenticate: Bearer realm="Device KEY", error="invalid_devicekey", error_description="Invalid device key"');
               print "Invalid device key";
-              $log = new EmonLogger(__FILE__);
               $log->error("Invalid device key '" . $devicekey. "'");
               exit();
         }
     } else {
         $session = $user->emon_session_start();
     }
-
+    
     // 4) Language
     if (!isset($session['lang'])) $session['lang']='';
     set_emoncms_lang($session['lang']);
 
     // 5) Get route and load controller
     $route = new Route(get('q'), server('DOCUMENT_ROOT'), server('REQUEST_METHOD'));
-
+    
+    // Load get/post/encrypted parameters - only used by input/post and input/bulk API's
+    $param = new Param($route,$user);
+    
+    // --------------------------------------------------------------------------------------
     // Special routes
 
     // Return brief device descriptor for hub detection
@@ -168,7 +173,6 @@
     if ($devicekey && !($route->controller == 'input' && ($route->action == 'bulk' || $route->action == 'post'))) {
         header($_SERVER["SERVER_PROTOCOL"]." 401 Unauthorized");
         print "Unauthorized. Device key autentication only permits input post or bulk actions";
-        $log = new EmonLogger(__FILE__);
         $log->error("Unauthorized. Device key autentication only permits input post or bulk actions");
         exit();
     }
@@ -194,6 +198,14 @@
             $route->controller = $public_profile_controller;
             $route->action = $public_profile_action;
             $output = controller($route->controller);
+
+            // catch "username/graph" and redirect to the graphs module if no dashboard called "graph" exists 
+            if ($output["content"]=="" && $route->subaction=="graph") {
+                $route->controller = "graph";
+                $route->action = "";
+                $_GET['userid'] = $userid;
+                $output = controller($route->controller);
+            }
         }
     }
 
@@ -217,14 +229,17 @@
     // 7) Output
     if ($route->format == 'json')
     {
-        header('Content-Type: application/json');
         if ($route->controller=='time') {
+            header('Content-Type: text');
             print $output['content'];
         } elseif ($route->controller=='input' && $route->action=='post') {
+            header('Content-Type: text');
             print $output['content'];
         } elseif ($route->controller=='input' && $route->action=='bulk') {
+            header('Content-Type: text');
             print $output['content'];
         } else {
+            header('Content-Type: application/json');
             print json_encode($output['content']);
         }
     }
